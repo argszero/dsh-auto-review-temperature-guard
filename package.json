@@ -1,0 +1,33 @@
+{
+  "name": "@argszero/dsh-auto-review-temperature-guard",
+  "version": "0.1.0",
+  "description": "Stops experimental-auto-review from sending a hardcoded temperature: 0 to a model that only accepts 1.",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": { "types": "./lib/types/index.d.ts", "default": "./lib/index.js" },
+    "./package.json": "./package.json"
+  },
+  "files": ["lib/**/*.js", "lib/types/**/*.d.ts", "cordis.patch.yml", "README.md", "LICENSE"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/argszero/dsh-auto-review-temperature-guard.git" },
+  "keywords": ["cordis", "deepseek-harness", "dsh", "plugin", "auto-review", "temperature", "llm"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-llm": ">=0.2.1-rc.3 <0.2.1"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.3",
+    "@types/node": "^24.19.0",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "pretest": "tsc",
+    "test": "node --test \"test/*.spec.mjs\""
+  },
+  "engines": { "node": "^22.19 || >=24" }
+}

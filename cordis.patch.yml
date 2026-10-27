@@ -1,0 +1,29 @@
+# The @argszero/dsh-auto-review-temperature-guard bundle patch: mount and go.
+#
+# experimental-auto-review reuses the Session's own route and narrows it
+# unconditionally. `packages/experimental/auto-review/src/index.ts:675-681`
+# builds one deep-frozen GenerateOptions with `temperature: 0` and hands it to
+# `ctx.llm.stream()`. On a model that accepts only `temperature: 1` (several
+# OpenAI-compatible routes, Kimi K3 among them) the reviewer request answers
+# HTTP 400, the reviewer stream ends in `error`, `readDecision` throws at `:647`,
+# and the pre-tool gate — which fails closed — denies every tool call. The
+# session stops working and the denial text cannot say why.
+#
+# The `llm/stream` waterfall sees that request and can identify it, but it
+# cannot change it: `next()` takes no arguments and the options object is frozen
+# at the call site. The request is therefore fixed one step earlier, at
+# `LlmRuntime.stream` (`packages/llm/llm/src/index.ts:1166`), which is where this
+# plugin intercepts it.
+#
+# The reviewer request is recognised by the same marker the harness's own
+# fixtures use — `system` begins with `REVIEW_POLICY\n`
+# (`packages/experimental/auto-review/tests/fixtures/headless-reviewer.ts:20`).
+# An ordinary turn leaves `system` undefined, so no conversation request can
+# match, and a request that does not match is passed through as the same object.
+#
+# By default the `temperature` field is omitted so the route's own default
+# applies; set `temperature` to send a specific value instead.
+
+- insert:
+    - id: auto-review-temperature-guard
+      name: '@argszero/dsh-auto-review-temperature-guard'
