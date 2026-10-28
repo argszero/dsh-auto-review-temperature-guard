@@ -84,9 +84,15 @@ call and the reviewer runs per call, so a per-call warning would be noise.
   (a per-route `supportsTemperature` capability, which `llm-pi-ai` has at
   `packages/llm/llm-pi-ai/src/catalog.ts:452` and the other adapters do not) is a core change; the guard
   works around the symptom, not the missing capability.
-- **It matches on a marker, not on an identity.** If a future auto-review renames the `REVIEW_POLICY`
-  header, the guard stops matching and the request goes out unchanged — `mode: observe` is how to confirm
-  the match against a new build before trusting it.
+- **It matches on a marker, not on an identity.** The marker is a real constant in the shipped package —
+  `const REVIEW_POLICY` at `packages/experimental/auto-review/src/index.ts:48`, used as `system` at `:678` —
+  and it is **not exported** (the package exports only `name`, `inject` and `apply`), so this guard carries
+  its own copy of the literal and cannot import it. If a future auto-review renames the header, the guard
+  stops matching and the request goes out unchanged, and nothing in this package is able to notice.
+  What the upstream build does provide is a tripwire on its own side: `tests/auto-review.spec.ts:415`
+  asserts the request it sends with `system: EXPECTED_REVIEW_POLICY`, so a rename fails that suite before
+  the same rename could reach a release — a `REVIEW_POLICY` change is a visible edit upstream, not a silent
+  one. `mode: observe` remains how to confirm the match against any new build before trusting it here.
 - **It is not the fix.** The fix is one of the reporter's three suggestions, applied in
   `experimental-auto-review` itself. This is what is available today without it.
 
